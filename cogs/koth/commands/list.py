@@ -9,10 +9,11 @@ def setup(group: app_commands.Group, bot):
     async def koth_list(interaction: discord.Interaction):
         koths = await database.get_all_koths(interaction.guild_id)
         if not koths:
-            await interaction.response.send_message("No koths have been created yet.", ephemeral=True)
+            embed = discord.Embed(description="No koths have been created yet.", color=discord.Color.red())
+            await interaction.response.send_message(embed=embed)
             return
 
-        embed = discord.Embed(title="KOTHs", color=discord.Color.bruple())
+        embed = discord.Embed(title="KOTHs", color=discord.Color.from_rgb(255, 255, 255))
         for k in koths:
             lines = [
                 f"Status: {k['status']}",
