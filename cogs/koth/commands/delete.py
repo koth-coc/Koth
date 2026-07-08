@@ -12,10 +12,7 @@ def setup(group: app_commands.Group, bot):
     async def delete(interaction: discord.Interaction, id: str):
         koth = await database.get_koth(id)
         if not koth:
-            embed = discord.Embed(
-                description=f"No koth found with id `{id}`.",
-                color=discord.Color.red(),
-            )
+            embed = discord.Embed(description=f"No koth found with id `{id}`.", color=discord.Color.red())
             await interaction.response.send_message(embed=embed)
             return
 
@@ -38,14 +35,10 @@ def setup(group: app_commands.Group, bot):
 
         if view.value:
             await database.delete_koth(id)
-            result_embed = discord.Embed(
-                description=f"KOTH `{id}` has been deleted.",
-                color=discord.Color.green(),
-            )
-            await interaction.followup.send(embed=result_embed)
+            result_embed = discord.Embed(description=f"KOTH `{id}` has been deleted.", color=discord.Color.green())
         else:
             result_embed = discord.Embed(
-                description=f"Deletion of KOTH `{id}` was cancelled.",
-                color=discord.Color.light_grey(),
+                description=f"Deletion of KOTH `{id}` was cancelled.", color=discord.Color.light_grey()
             )
-            await interaction.followup.send(embed=result_embed)
+
+        await interaction.edit_original_response(embed=result_embed, view=None)
