@@ -31,13 +31,11 @@ def setup(group: app_commands.Group, bot):
 
         tag = normalize_tag(player_tag)
 
-        # already registered (same tag)
         if await database.is_tag_registered_for_koth(id, tag):
             embed = discord.Embed(description="That tag is already registered for this koth.", color=discord.Color.red())
             await interaction.followup.send(embed=embed)
             return
 
-        # already registered with a different tag (same discord user)
         existing_registrations = await database.get_registrations(id)
         for reg in existing_registrations:
             if reg["discord_id"] == interaction.user.id:
@@ -87,12 +85,7 @@ def setup(group: app_commands.Group, bot):
             await interaction.followup.send(embed=embed)
             return
 
-        success_embed = discord.Embed(title="Registration successful", color=discord.Color.green())
-        success_embed.add_field(name="Player name", value=player.name, inline=True)
-        success_embed.add_field(name="Player tag", value=tag, inline=True)
-        success_embed.add_field(name="Town Hall", value=str(player.town_hall), inline=True)
-        success_embed.add_field(name="Clan", value=clan_name, inline=True)
-        success_embed.add_field(name="League", value=league, inline=True)
+        success_embed = discord.Embed(description="Registration successful!", color=discord.Color.green())
         await interaction.followup.send(embed=success_embed)
 
         if koth["log_channel_id"]:
@@ -101,6 +94,7 @@ def setup(group: app_commands.Group, bot):
                 log_embed = discord.Embed(title="Registration successful", color=discord.Color.gold())
                 log_embed.add_field(name="Player name", value=player.name, inline=True)
                 log_embed.add_field(name="Player tag", value=tag, inline=True)
+                log_embed.add_field(name="Town Hall", value=str(player.town_hall), inline=True)
                 log_embed.add_field(name="Discord", value=interaction.user.mention, inline=True)
                 log_embed.add_field(name="Clan", value=clan_name, inline=True)
                 log_embed.add_field(name="League", value=league, inline=True)
