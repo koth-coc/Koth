@@ -12,9 +12,21 @@ def setup(group: app_commands.Group, bot):
     async def koth_setup(interaction: discord.Interaction, id: str):
         koth = await database.get_koth(id)
         if not koth:
-            await interaction.response.send_message(f"No koth found with id `{id}`.", ephemeral=True)
+            embed = discord.Embed(description=f"No koth found with id `{id}`.", color=discord.Color.red())
+            await interaction.response.send_message(embed=embed)
             return
 
         view = SetupView(id, interaction.user.id)
         embed = await view.build_embed()
-        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+        await interaction.response.send_message(embed=embed, view=view)
+
+    @koth_setup.error
+    async def koth_setup_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+        if isinstance(error, app_commands.MissingPermissions):
+            embed = discord.Embed(
+                description="You don't have permission to use this command.",
+                color=discord.Color.red(),
+            )
+            await interaction.response.send_message(embed=embed)
+        else:
+            raise error
