@@ -59,8 +59,8 @@ class ThModal(discord.ui.Modal, title="Set Town Hall Level"):
 
 class TimeModal(discord.ui.Modal, title="Set Start Time"):
     time_input = discord.ui.TextInput(
-        label="Start time (ddmmyyyyThhmm)",
-        placeholder="e.g. 08072026T1830",
+        label="Start time (dd-mm-yyyyThh:mm)",
+        placeholder="e.g. 08-07-2026T18:30",
     )
 
     def __init__(self, koth_id: str, panel: "SetupView"):
@@ -73,7 +73,7 @@ class TimeModal(discord.ui.Modal, title="Set Start Time"):
             dt = parse_koth_time(self.time_input.value)
         except ValueError:
             embed = discord.Embed(
-                description="Invalid format. Use ddmmyyyyThhmm, e.g. 08072026T1830.",
+                description="Invalid format. Use dd-mm-yyyyThh:mm, e.g. 08-07-2026T18:30.",
                 color=discord.Color.red(),
             )
             await interaction.response.send_message(embed=embed)
