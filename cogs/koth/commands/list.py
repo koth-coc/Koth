@@ -12,7 +12,7 @@ def setup(group: app_commands.Group, bot):
             await interaction.response.send_message("No koths have been created yet.", ephemeral=True)
             return
 
-        embed = discord.Embed(title="KOTHs", color=discord.Color.blurple())
+        embed = discord.Embed(title="KOTHs", color=discord.Color.white())
         for k in koths:
             lines = [
                 f"Status: {k['status']}",
