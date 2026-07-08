@@ -55,6 +55,10 @@ def setup(group: app_commands.Group, bot):
             await interaction.followup.send(embed=embed)
             return
 
+        # DEBUG: inspect league data shape while we track down the "Unranked" bug
+        print(f"[DEBUG] player.league raw: {player.league!r}")
+        print(f"[DEBUG] player raw data: {getattr(player, '_raw_data', 'n/a')}")
+
         token_valid = await bot.coc_client.verify_player_token(tag, api)
         if not token_valid:
             embed = discord.Embed(
