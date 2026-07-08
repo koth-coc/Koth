@@ -51,7 +51,7 @@ def setup(group: app_commands.Group, bot):
         announce_embed = discord.Embed(
             title=f"KOTH `{id}` is now open!",
             description=f"Clan is now open, join fast!\n\n**Clan:** {clan}",
-            color=discord.Color.from_rgb(255, 255, 255)),
+            color=discord.Color.green(),
         )
         mentions = " ".join(f"<@{r['discord_id']}>" for r in registrations)
         await target_channel.send(content=mentions, embed=announce_embed)
@@ -71,12 +71,4 @@ def setup(group: app_commands.Group, bot):
         await interaction.followup.send(embed=result_embed)
 
     @start.error
-    async def start_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
-        if isinstance(error, app_commands.MissingPermissions):
-            embed = discord.Embed(
-                description="You don't have permission to use this command.",
-                color=discord.Color.red(),
-            )
-            await interaction.response.send_message(embed=embed)
-        else:
-            raise error
+    async def start_error(interaction: discord.Interaction, error: app_commands.A
