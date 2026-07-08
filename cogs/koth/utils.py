@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 import database
 
-TIME_FORMAT = "%d%m%YT%H%M"  # e.g. 08072026T1830
+TIME_FORMAT = "%d-%m-%YT%H:%M"
 
 
 def parse_koth_time(value: str) -> datetime:
