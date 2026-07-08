@@ -55,11 +55,6 @@ def setup(group: app_commands.Group, bot):
             await interaction.followup.send(embed=embed)
             return
 
-        # DEBUG: inspect league/trophy data shape while we track down the "Unranked" bug
-        print(f"[DEBUG] player.league raw: {player.league!r}")
-        print(f"[DEBUG] player.trophies: {player.trophies!r}")
-        print(f"[DEBUG] player.legend_statistics: {player.legend_statistics!r}")
-
         token_valid = await bot.coc_client.verify_player_token(tag, api)
         if not token_valid:
             embed = discord.Embed(
@@ -81,10 +76,10 @@ def setup(group: app_commands.Group, bot):
             return
 
         clan_name = player.clan.name if player.clan else "No Clan"
-        league = player.league.name if player.league else "Unranked"
+        trophies = player.trophies
 
         try:
-            await database.add_registration(id, interaction.user.id, tag, player.name, clan_name, league)
+            await database.add_registration(id, interaction.user.id, tag, player.name, clan_name, trophies)
         except Exception:
             embed = discord.Embed(description="You're already registered for this koth.", color=discord.Color.red())
             await interaction.followup.send(embed=embed)
@@ -102,5 +97,5 @@ def setup(group: app_commands.Group, bot):
                 log_embed.add_field(name="Town Hall", value=str(player.town_hall), inline=True)
                 log_embed.add_field(name="Discord", value=interaction.user.mention, inline=True)
                 log_embed.add_field(name="Clan", value=clan_name, inline=True)
-                log_embed.add_field(name="League", value=league, inline=True)
+                log_embed.add_field(name="Trophies", value=f"{trophies} 🏆", inline=True)
                 await log_channel.send(content=interaction.user.mention, embed=log_embed)
