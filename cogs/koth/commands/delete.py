@@ -12,13 +12,39 @@ def setup(group: app_commands.Group, bot):
     async def delete(interaction: discord.Interaction, id: str):
         koth = await database.get_koth(id)
         if not koth:
-            await interaction.response.send_message(f"No koth found with id `{id}`.", ephemeral=True)
+            embed = discord.Embed(
+                description=f"No koth found with id `{id}`.",
+                color=discord.Color.red(),
+            )
+            await interaction.response.send_message(embed=embed)
             return
 
-        view = ConfirmView(interaction.user.id)
-        await interaction.response.send_message(
-            f"Are you sure you want to delete koth `{id}`? This cannot be undone.", view=view, ephemeral=True
+        embed = discord.Embed(
+            title=f"Delete KOTH: {id}?",
+            description="Are you sure you want to delete this koth? This cannot be undone.",
+            color=discord.Color.orange(),
         )
+        embed.add_field(name="Town Hall", value=str(koth["th"]))
+        embed.add_field(name="Start time", value=discord.utils.format_dt(koth["start_time"], "F"))
+        log_channel = interaction.guild.get_channel(koth["log_channel_id"])
+        reg_channel = interaction.guild.get_channel(koth["reg_channel_id"])
+        embed.add_field(name="Log channel", value=log_channel.mention if log_channel else "Unknown")
+        embed.add_field(name="Registration channel", value=reg_channel.mention if reg_channel else "Unknown")
+
+        view = ConfirmView(interaction.user.id)
+        await interaction.response.send_message(embed=embed, view=view)
         await view.wait()
+
         if view.value:
             await database.delete_koth(id)
+            result_embed = discord.Embed(
+                description=f"KOTH `{id}` has been deleted.",
+                color=discord.Color.green(),
+            )
+            await interaction.followup.send(embed=result_embed)
+        else:
+            result_embed = discord.Embed(
+                description=f"Deletion of KOTH `{id}` was cancelled.",
+                color=discord.Color.greyish() if hasattr(discord.Color, "greyish") else discord.Color.light_grey(),
+            )
+            await interaction.followup.send(embed=result_embed)
