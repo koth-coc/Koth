@@ -51,7 +51,7 @@ def setup(group: app_commands.Group, bot):
 
         await database.create_koth(id, interaction.guild_id, townhall, start_time, log_channel.id, reg_channel.id)
 
-        embed = discord.Embed(title=f"KOTH created: {id}", color=discord.Color.green())
+        embed = discord.Embed(title=f"KOTH created: {id}", color=discord.Color.from_rgb(255, 255, 255))
         embed.add_field(name="Town Hall", value=str(townhall))
         embed.add_field(name="Start time", value=discord.utils.format_dt(start_time, "F"))
         embed.add_field(name="Log channel", value=log_channel.mention)
