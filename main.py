@@ -21,13 +21,13 @@ class KothBot(commands.Bot):
         await self.coc_client.login(config.COC_EMAIL, config.COC_PASSWORD)
         await self.load_extension("cogs.koth")
 
-        # One-time: wipe old global commands (remove these 2 lines after next deploy confirms duplicates are gone)
-        self.tree.clear_commands(guild=None)
-        await self.tree.sync()
-
         guild = discord.Object(id=GUILD_ID)
         self.tree.copy_global_to(guild=guild)
         await self.tree.sync(guild=guild)
+
+        # One-time: wipe old global commands (remove these 2 lines after next deploy confirms guild commands are correct)
+        self.tree.clear_commands(guild=None)
+        await self.tree.sync()
 
         self.koth_reminder = KothReminder(self)
         print("Slash commands synced.")
