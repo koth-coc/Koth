@@ -6,6 +6,8 @@ import database
 from utils import CocClient
 from tasks.koth_reminder import KothReminder
 
+GUILD_ID = 1380802948497670195
+
 
 class KothBot(commands.Bot):
     def __init__(self):
@@ -18,7 +20,11 @@ class KothBot(commands.Bot):
         await database.init_db()
         await self.coc_client.login(config.COC_EMAIL, config.COC_PASSWORD)
         await self.load_extension("cogs.koth")
-        await self.tree.sync()
+
+        guild = discord.Object(id=GUILD_ID)
+        self.tree.copy_global_to(guild=guild)
+        await self.tree.sync(guild=guild)
+
         self.koth_reminder = KothReminder(self)
         print("Slash commands synced.")
 
