@@ -48,6 +48,19 @@ async def mark_reminder_sent(koth_id):
         await con.execute("UPDATE koths SET reminder_sent = TRUE WHERE id = $1", koth_id)
 
 
+async def get_all_koths(guild_id):
+    async with pool().acquire() as con:
+        return await con.fetch(
+            """SELECT k.*, COUNT(r.id) AS registration_count
+               FROM koths k
+               LEFT JOIN registrations r ON r.koth_id = k.id
+               WHERE k.guild_id = $1
+               GROUP BY k.id
+               ORDER BY k.created_at DESC""",
+            guild_id,
+        )
+
+
 # ---------- registration helpers ----------
 
 async def add_registration(koth_id, discord_id, player_tag, player_name, clan_name, league):
@@ -64,11 +77,11 @@ async def get_registrations(koth_id):
         return await con.fetch("SELECT * FROM registrations WHERE koth_id = $1", koth_id)
 
 
-async def find_registration_by_tag(player_tag, discord_id):
+async def find_registration(koth_id, discord_id, player_tag):
     async with pool().acquire() as con:
         return await con.fetchrow(
-            "SELECT * FROM registrations WHERE player_tag = $1 AND discord_id = $2",
-            player_tag, discord_id,
+            "SELECT * FROM registrations WHERE koth_id = $1 AND discord_id = $2 AND player_tag = $3",
+            koth_id, discord_id, player_tag,
         )
 
 
