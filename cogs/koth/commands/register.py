@@ -55,7 +55,12 @@ def setup(group: app_commands.Group, bot):
             await interaction.followup.send(embed=embed)
             return
 
+        # DEBUG: inspect exactly what's being sent/returned for token verification
+        print(f"[DEBUG] tag being sent: {tag!r}")
+        print(f"[DEBUG] api token being sent: {api!r}")
         token_valid = await bot.coc_client.verify_player_token(tag, api)
+        print(f"[DEBUG] verify_player_token result: {token_valid!r}")
+
         if not token_valid:
             embed = discord.Embed(
                 description="Invalid API token. Get it from in-game: Settings > More Settings > API Token.",
