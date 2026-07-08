@@ -29,11 +29,8 @@ class CocClient:
     async def verify_player_token(self, tag: str, token: str) -> bool:
         """Returns True if the given API token is valid for this player tag."""
         try:
-            result = await self.client.verify_player_token(tag, token)
-            print(f"[DEBUG] verify_player_token raw result: {result!r}")
-            return result
-        except Exception as e:
-            print(f"[DEBUG] verify_player_token EXCEPTION: {type(e).__name__}: {e}")
+            return await self.client.verify_player_token(tag, token)
+        except Exception:
             return False
 
     async def close(self):
