@@ -25,13 +25,13 @@ class ConfirmView(discord.ui.View):
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.value = True
         self.stop()
-        await interaction.response.edit_message(content="Deleted.", view=None, embed=None)
+        await interaction.response.defer()
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary)
     async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.value = False
         self.stop()
-        await interaction.response.edit_message(content="Cancelled.", view=None, embed=None)
+        await interaction.response.defer()
 
 
 # ---------------------------------------------------------------------------
@@ -50,7 +50,8 @@ class ThModal(discord.ui.Modal, title="Set Town Hall Level"):
         try:
             th_level = int(self.th.value)
         except ValueError:
-            await interaction.response.send_message("Town hall level must be a number.", ephemeral=True)
+            embed = discord.Embed(description="Town hall level must be a number.", color=discord.Color.red())
+            await interaction.response.send_message(embed=embed)
             return
         await database.update_koth(self.koth_id, th_level=th_level)
         await self.panel.refresh(interaction)
@@ -71,12 +72,15 @@ class TimeModal(discord.ui.Modal, title="Set Start Time"):
         try:
             dt = parse_koth_time(self.time_input.value)
         except ValueError:
-            await interaction.response.send_message(
-                "Invalid format. Use ddmmyyyyThhmm, e.g. 08072026T1830.", ephemeral=True
+            embed = discord.Embed(
+                description="Invalid format. Use ddmmyyyyThhmm, e.g. 08072026T1830.",
+                color=discord.Color.red(),
             )
+            await interaction.response.send_message(embed=embed)
             return
         if dt <= datetime.now(timezone.utc):
-            await interaction.response.send_message("Start time must be in the future.", ephemeral=True)
+            embed = discord.Embed(description="Start time must be in the future.", color=discord.Color.red())
+            await interaction.response.send_message(embed=embed)
             return
         await database.update_koth(self.koth_id, start_time=dt)
         await self.panel.refresh(interaction)
@@ -90,9 +94,11 @@ class SetupView(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.author_id:
-            await interaction.response.send_message(
-                "Only the person who ran /koth setup can use this.", ephemeral=True
+            embed = discord.Embed(
+                description="Only the person who ran /koth setup can use this.",
+                color=discord.Color.red(),
             )
+            await interaction.response.send_message(embed=embed)
             return False
         return True
 
@@ -155,7 +161,8 @@ class SetupView(discord.ui.View):
 
     @discord.ui.button(label="Done", style=discord.ButtonStyle.success, row=3)
     async def done(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.edit_message(content="Setup closed.", view=None)
+        embed = discord.Embed(description="Setup closed.", color=discord.Color.green())
+        await interaction.response.edit_message(embed=embed, view=None)
 
 
 # ---------------------------------------------------------------------------
@@ -201,7 +208,8 @@ class AddButtonModal(discord.ui.Modal, title="Add a button"):
 
     async def on_submit(self, interaction: discord.Interaction):
         if len(self.builder.link_buttons) >= 5:
-            await interaction.response.send_message("Max 5 buttons.", ephemeral=True)
+            embed = discord.Embed(description="Max 5 buttons.", color=discord.Color.red())
+            await interaction.response.send_message(embed=embed)
             return
         self.builder.link_buttons.append((self.label.value, self.url.value))
         await self.builder.refresh(interaction)
@@ -237,8 +245,10 @@ class EmbedBuilderView(discord.ui.View):
         for label, url in self.link_buttons:
             final_view.add_item(discord.ui.Button(label=label, url=url))
         await interaction.channel.send(embed=self.embed, view=final_view if self.link_buttons else None)
-        await interaction.response.edit_message(content="Sent.", embed=None, view=None)
+        embed = discord.Embed(description="Sent.", color=discord.Color.green())
+        await interaction.response.edit_message(embed=embed, view=None)
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger, row=1)
     async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.edit_message(content="Cancelled.", embed=None, view=None)
+        embed = discord.Embed(description="Cancelled.", color=discord.Color.light_grey())
+        await interaction.response.edit_message(embed=embed, view=None)
