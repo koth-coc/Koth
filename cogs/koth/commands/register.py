@@ -55,12 +55,7 @@ def setup(group: app_commands.Group, bot):
             await interaction.followup.send(embed=embed)
             return
 
-        # DEBUG: inspect exactly what's being sent/returned for token verification
-        print(f"[DEBUG] tag being sent: {tag!r}")
-        print(f"[DEBUG] api token being sent: {api!r}")
         token_valid = await bot.coc_client.verify_player_token(tag, api)
-        print(f"[DEBUG] verify_player_token result: {token_valid!r}")
-
         if not token_valid:
             embed = discord.Embed(
                 description="Invalid API token. Get it from in-game: Settings > More Settings > API Token.",
@@ -84,8 +79,9 @@ def setup(group: app_commands.Group, bot):
         trophies = player.trophies
 
         try:
-            await database.add_registration(id, interaction.user.id, tag, player.name, clan_name, trophies)
-        except Exception:
+            await database.add_registration(id, interaction.user.id, tag, player.name, clan_name, str(trophies))
+        except Exception as e:
+            print(f"[DEBUG] add_registration error: {type(e).__name__}: {e}")
             embed = discord.Embed(description="You're already registered for this koth.", color=discord.Color.red())
             await interaction.followup.send(embed=embed)
             return
