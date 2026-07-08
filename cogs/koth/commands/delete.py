@@ -24,12 +24,13 @@ def setup(group: app_commands.Group, bot):
             description="Are you sure you want to delete this koth? This cannot be undone.",
             color=discord.Color.orange(),
         )
-        embed.add_field(name="Town Hall", value=str(koth["th"]))
+        embed.add_field(name="Town Hall", value=str(koth["th_level"]))
         embed.add_field(name="Start time", value=discord.utils.format_dt(koth["start_time"], "F"))
         log_channel = interaction.guild.get_channel(koth["log_channel_id"])
         reg_channel = interaction.guild.get_channel(koth["reg_channel_id"])
         embed.add_field(name="Log channel", value=log_channel.mention if log_channel else "Unknown")
         embed.add_field(name="Registration channel", value=reg_channel.mention if reg_channel else "Unknown")
+        embed.add_field(name="Status", value=koth["status"])
 
         view = ConfirmView(interaction.user.id)
         await interaction.response.send_message(embed=embed, view=view)
@@ -45,6 +46,6 @@ def setup(group: app_commands.Group, bot):
         else:
             result_embed = discord.Embed(
                 description=f"Deletion of KOTH `{id}` was cancelled.",
-                color=discord.Color.greyish() if hasattr(discord.Color, "greyish") else discord.Color.light_grey(),
+                color=discord.Color.light_grey(),
             )
             await interaction.followup.send(embed=result_embed)
