@@ -14,7 +14,6 @@ def setup(group: app_commands.Group, bot):
         log_channel="Channel where registration info will be posted",
         reg_channel="Channel where /koth register will be accepted",
     )
-    @app_commands.rename(townhall="townhall")
     @app_commands.checks.has_permissions(administrator=True)
     async def create(
         interaction: discord.Interaction,
@@ -25,19 +24,29 @@ def setup(group: app_commands.Group, bot):
         reg_channel: discord.TextChannel,
     ):
         if await database.get_koth(id):
-            await interaction.response.send_message(f"A koth with id `{id}` already exists.", ephemeral=True)
+            embed = discord.Embed(
+                description=f"A koth with id `{id}` already exists.",
+                color=discord.Color.red(),
+            )
+            await interaction.response.send_message(embed=embed)
             return
 
         try:
             start_time = datetime.strptime(time, "%d-%m-%YT%H:%M").replace(tzinfo=timezone.utc)
         except ValueError:
-            await interaction.response.send_message(
-                "Invalid time format. Use dd-mm-yyyyThh:mm, e.g. 08-07-2026T18:30.", ephemeral=True
+            embed = discord.Embed(
+                description="Invalid time format. Use dd-mm-yyyyThh:mm, e.g. 08-07-2026T18:30.",
+                color=discord.Color.red(),
             )
+            await interaction.response.send_message(embed=embed)
             return
 
         if start_time <= datetime.now(timezone.utc):
-            await interaction.response.send_message("Start time must be in the future.", ephemeral=True)
+            embed = discord.Embed(
+                description="Start time must be in the future.",
+                color=discord.Color.red(),
+            )
+            await interaction.response.send_message(embed=embed)
             return
 
         await database.create_koth(id, interaction.guild_id, townhall, start_time, log_channel.id, reg_channel.id)
@@ -52,6 +61,10 @@ def setup(group: app_commands.Group, bot):
     @create.error
     async def create_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
         if isinstance(error, app_commands.MissingPermissions):
-            await interaction.response.send_message("You don't have permission to use this command.", ephemeral=True)
+            embed = discord.Embed(
+                description="You don't have permission to use this command.",
+                color=discord.Color.red(),
+            )
+            await interaction.response.send_message(embed=embed)
         else:
             raise error
