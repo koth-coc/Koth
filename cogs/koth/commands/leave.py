@@ -11,16 +11,20 @@ def setup(group: app_commands.Group, bot):
     async def leave(interaction: discord.Interaction, id: str, tag: str):
         koth = await database.get_koth(id)
         if not koth:
-            await interaction.response.send_message(f"No koth found with id `{id}`.", ephemeral=True)
+            embed = discord.Embed(description=f"No koth found with id `{id}`.", color=discord.Color.red())
+            await interaction.response.send_message(embed=embed)
             return
 
         normalized = normalize_tag(tag)
         reg = await database.find_registration(id, interaction.user.id, normalized)
         if not reg:
-            await interaction.response.send_message(
-                "You're not registered for that koth with that tag.", ephemeral=True
+            embed = discord.Embed(
+                description="You're not registered for that koth with that tag.",
+                color=discord.Color.red(),
             )
+            await interaction.response.send_message(embed=embed)
             return
 
         await database.remove_registration(reg["id"])
-        await interaction.response.send_message(f"You've been removed from koth `{id}`.", ephemeral=True)
+        embed = discord.Embed(description=f"You've been removed from koth `{id}`.", color=discord.Color.green())
+        await interaction.response.send_message(embed=embed)
