@@ -56,10 +56,7 @@ def setup(group: app_commands.Group, bot):
         mentions = " ".join(f"<@{r['discord_id']}>" for r in registrations)
         await target_channel.send(content=mentions, embed=announce_embed)
 
-        result_embed = discord.Embed(
-            title="Start complete",
-            color=discord.Color.blurple(),
-        )
+        result_embed = discord.Embed(title="Start complete", color=discord.Color.blurple())
         result_embed.add_field(name="Announced in", value=target_channel.mention, inline=True)
         result_embed.add_field(name="DMs sent", value=str(dm_success), inline=True)
         if dm_failed:
@@ -71,4 +68,9 @@ def setup(group: app_commands.Group, bot):
         await interaction.followup.send(embed=result_embed)
 
     @start.error
-    async def start_error(interaction: discord.Interaction, error: app_commands.A
+    async def start_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+        if isinstance(error, app_commands.MissingPermissions):
+            embed = discord.Embed(description="You don't have permission to use this command.", color=discord.Color.red())
+            await interaction.response.send_message(embed=embed)
+        else:
+            raise error
