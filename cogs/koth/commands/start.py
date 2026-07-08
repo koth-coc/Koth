@@ -51,7 +51,7 @@ def setup(group: app_commands.Group, bot):
         announce_embed = discord.Embed(
             title=f"KOTH `{id}` is now open!",
             description=f"Clan is now open, join fast!\n\n**Clan:** {clan}",
-            color=discord.Color.green(),
+            color=discord.Color.from_rgb(255, 255, 255)),
         )
         mentions = " ".join(f"<@{r['discord_id']}>" for r in registrations)
         await target_channel.send(content=mentions, embed=announce_embed)
