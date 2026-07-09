@@ -10,9 +10,8 @@ def setup(group: app_commands.Group, bot):
     @app_commands.describe(
         id="The koth id",
         player_tag="Your in-game player tag, e.g. #ABC123",
-        api="Your API token from in-game settings > More Settings",
     )
-    async def register(interaction: discord.Interaction, id: str, player_tag: str, api: str):
+    async def register(interaction: discord.Interaction, id: str, player_tag: str):
         koth = await database.get_koth(id)
         if not koth:
             embed = discord.Embed(description=f"No koth found with id `{id}`.", color=discord.Color.red())
@@ -55,15 +54,6 @@ def setup(group: app_commands.Group, bot):
             await interaction.followup.send(embed=embed)
             return
 
-        token_valid = await bot.coc_client.verify_player_token(tag, api)
-        if not token_valid:
-            embed = discord.Embed(
-                description="Invalid API token. Get it from in-game: Settings > More Settings > API Token.",
-                color=discord.Color.red(),
-            )
-            await interaction.followup.send(embed=embed)
-            return
-
         if koth["th_level"] and player.town_hall != koth["th_level"]:
             embed = discord.Embed(
                 description=(
@@ -95,7 +85,7 @@ def setup(group: app_commands.Group, bot):
                 log_embed.add_field(name="Player name", value=player.name, inline=True)
                 log_embed.add_field(name="Player tag", value=tag, inline=True)
                 log_embed.add_field(name="Town Hall", value=str(player.town_hall), inline=True)
-                log_embed.add_field(name="Discord Id", value=interaction.user.mention, inline=True)
+                log_embed.add_field(name="Discord", value=interaction.user.mention, inline=True)
                 log_embed.add_field(name="Clan", value=clan_name, inline=True)
                 log_embed.add_field(name="Trophies", value=f"{trophies} 🏆", inline=True)
                 await log_channel.send(content=interaction.user.mention, embed=log_embed)
