@@ -258,7 +258,7 @@ class LinkButtonModal(discord.ui.Modal, title="Add a Link Button"):
 
         self.builder.link_buttons.append((self.label.value, self.url.value))
         confirm = discord.Embed(
-            description=f"Link button **{self.label.value}** added.", color=discord.Color.green()
+            description=f"🔗 Link button **{self.label.value}** added.", color=discord.Color.green()
         )
         await interaction.response.edit_message(embed=confirm, view=None)
         await self.builder.update_preview()
@@ -292,15 +292,15 @@ class ButtonTypeView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return interaction.user.id == self.builder.author_id
 
-    @discord.ui.button(label="Link", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="Link", style=discord.ButtonStyle.primary, emoji="🔗")
     async def link(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(LinkButtonModal(self.builder))
 
-    @discord.ui.button(label="Message", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="Message", style=discord.ButtonStyle.primary, emoji="💬")
     async def message(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(MessageButtonLabelModal(self.builder))
 
-    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary)
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary, emoji="✖️")
     async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
         embed = discord.Embed(description="Cancelled.", color=discord.Color.light_grey())
         await interaction.response.edit_message(embed=embed, view=None)
@@ -353,7 +353,11 @@ class MessageButtonSubBuilder(discord.ui.View):
         super().__init__(timeout=300)
         self.parent = parent
         self.label = label
-        self.embed = discord.Embed(description="Configure this button's message")
+        self.embed = discord.Embed(
+            title=f"💬 Configuring: {label}",
+            description="Set this button's message content below.",
+            color=discord.Color.from_rgb(88, 101, 242),
+        )
         self.ephemeral = True
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -365,34 +369,34 @@ class MessageButtonSubBuilder(discord.ui.View):
         else:
             await interaction.response.edit_message(embed=self.embed, view=self)
 
-    @discord.ui.button(label="Title", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(label="Title", style=discord.ButtonStyle.primary, emoji="📝", row=0)
     async def set_title(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(SubTitleModal(self))
 
-    @discord.ui.button(label="Description", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(label="Description", style=discord.ButtonStyle.primary, emoji="📄", row=0)
     async def set_description(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(SubDescriptionModal(self))
 
-    @discord.ui.button(label="Banner", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(label="Banner", style=discord.ButtonStyle.primary, emoji="🖼️", row=0)
     async def set_banner(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(SubBannerModal(self))
 
-    @discord.ui.button(label="Ephemeral: Yes", style=discord.ButtonStyle.secondary, row=1)
+    @discord.ui.button(label="Ephemeral: Yes", style=discord.ButtonStyle.secondary, emoji="👁️", row=1)
     async def toggle_visibility(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.ephemeral = not self.ephemeral
         button.label = f"Ephemeral: {'Yes' if self.ephemeral else 'No'}"
         await self.refresh(interaction)
 
-    @discord.ui.button(label="Save", style=discord.ButtonStyle.success, row=2)
+    @discord.ui.button(label="Save", style=discord.ButtonStyle.success, emoji="✅", row=2)
     async def save(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.parent.message_buttons.append(
-            {"label": self.label, "embed": self.embed, "ephemeral": self.ephemeral}
+            {"label": self.label, "embed": self.embed.copy(), "ephemeral": self.ephemeral}
         )
-        confirm = discord.Embed(description=f"Message button **{self.label}** saved.", color=discord.Color.green())
+        confirm = discord.Embed(description=f"💬 Message button **{self.label}** saved.", color=discord.Color.green())
         await interaction.response.edit_message(embed=confirm, view=None)
         await self.parent.update_preview()
 
-    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger, row=2)
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger, emoji="✖️", row=2)
     async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
         embed = discord.Embed(description="Cancelled.", color=discord.Color.light_grey())
         await interaction.response.edit_message(embed=embed, view=None)
@@ -400,7 +404,7 @@ class MessageButtonSubBuilder(discord.ui.View):
 
 def _build_message_button(cfg: dict) -> discord.ui.Button:
     """Creates a real, functional button that sends the configured message when clicked."""
-    btn = discord.ui.Button(label=cfg["label"], style=discord.ButtonStyle.secondary)
+    btn = discord.ui.Button(label=cfg["label"], style=discord.ButtonStyle.secondary, emoji="💬")
 
     async def callback(interaction: discord.Interaction, cfg=cfg):
         await interaction.response.send_message(embed=cfg["embed"], ephemeral=cfg["ephemeral"])
@@ -417,7 +421,11 @@ class EmbedBuilderView(discord.ui.View):
     def __init__(self, author_id: int, default_channel: discord.TextChannel = None):
         super().__init__(timeout=600)
         self.author_id = author_id
-        self.embed = discord.Embed(description="This message will be updated as we use the builder")
+        self.embed = discord.Embed(
+            title="Your Embed",
+            description="*Nothing set yet — use the buttons above to start building.*",
+            color=discord.Color.from_rgb(47, 49, 54),
+        )
         self.link_buttons: list[tuple[str, str]] = []
         self.message_buttons: list[dict] = []
         self.target_channel: discord.TextChannel = default_channel
@@ -430,52 +438,57 @@ class EmbedBuilderView(discord.ui.View):
         if self.preview_message is None:
             return
 
-        footer_note = f"Will send to: #{self.target_channel.name}" if self.target_channel else "No channel selected"
         preview = self.embed.copy()
+        dest = f"#{self.target_channel.name}" if self.target_channel else "No channel selected"
         base_footer = preview.footer.text
-        preview.set_footer(text=f"{base_footer}  •  {footer_note}" if base_footer else footer_note)
+        preview.set_footer(text=f"{base_footer}  •  📍 {dest}" if base_footer else f"📍 {dest}")
 
         preview_view = None
         if self.link_buttons or self.message_buttons:
             preview_view = discord.ui.View()
             for label, url in self.link_buttons:
-                preview_view.add_item(discord.ui.Button(label=label, url=url))
+                preview_view.add_item(discord.ui.Button(label=label, url=url, emoji="🔗"))
             for cfg in self.message_buttons:
                 preview_view.add_item(
-                    discord.ui.Button(label=cfg["label"], style=discord.ButtonStyle.secondary, disabled=True)
+                    discord.ui.Button(
+                        label=cfg["label"], style=discord.ButtonStyle.secondary, emoji="💬", disabled=True
+                    )
                 )
 
         await self.preview_message.edit(embed=preview, view=preview_view)
 
-    @discord.ui.button(label="Title", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(label="Title", style=discord.ButtonStyle.primary, emoji="📝", row=0)
     async def set_title(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(TitleModal(self))
 
-    @discord.ui.button(label="Description", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(label="Description", style=discord.ButtonStyle.primary, emoji="📄", row=0)
     async def set_description(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(DescriptionModal(self))
 
-    @discord.ui.button(label="Banner", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(label="Banner", style=discord.ButtonStyle.primary, emoji="🖼️", row=0)
     async def set_banner(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(BannerModal(self))
 
-    @discord.ui.button(label="Footer", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(label="Footer", style=discord.ButtonStyle.primary, emoji="🏷️", row=0)
     async def set_footer(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(FooterModal(self))
 
-    @discord.ui.button(label="Color", style=discord.ButtonStyle.secondary, row=1)
+    @discord.ui.button(label="Color", style=discord.ButtonStyle.secondary, emoji="🎨", row=1)
     async def set_color(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(ColorModal(self))
 
-    @discord.ui.button(label="Add Button", style=discord.ButtonStyle.secondary, row=1)
+    @discord.ui.button(label="Add Button", style=discord.ButtonStyle.secondary, emoji="🔘", row=1)
     async def add_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        embed = discord.Embed(description="What type of button do you want to add?")
+        embed = discord.Embed(
+            description="Choose the button type you'd like to add.",
+            color=discord.Color.from_rgb(88, 101, 242),
+        )
         await interaction.response.send_message(embed=embed, view=ButtonTypeView(self), ephemeral=True)
 
     @discord.ui.select(
         cls=discord.ui.ChannelSelect,
         channel_types=[discord.ChannelType.text],
-        placeholder="Channel",
+        placeholder="📍 Select a channel",
         row=2,
     )
     async def select_channel(self, interaction: discord.Interaction, select: discord.ui.ChannelSelect):
@@ -483,28 +496,31 @@ class EmbedBuilderView(discord.ui.View):
         await interaction.response.defer()
         await self.update_preview()
 
-    @discord.ui.button(label="Send", style=discord.ButtonStyle.success, row=3)
+    @discord.ui.button(label="Send", style=discord.ButtonStyle.success, emoji="✅", row=3)
     async def send(self, interaction: discord.Interaction, button: discord.ui.Button):
         if self.target_channel is None:
-            await interaction.response.send_message("Please select a channel first.", ephemeral=True)
+            embed = discord.Embed(description="Please select a channel first.", color=discord.Color.red())
+            await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
         final_view = None
         if self.link_buttons or self.message_buttons:
             final_view = discord.ui.View(timeout=None)
             for label, url in self.link_buttons:
-                final_view.add_item(discord.ui.Button(label=label, url=url))
+                final_view.add_item(discord.ui.Button(label=label, url=url, emoji="🔗"))
             for cfg in self.message_buttons:
                 final_view.add_item(_build_message_button(cfg))
 
         await self.target_channel.send(embed=self.embed, view=final_view)
 
-        confirm_embed = discord.Embed(description=f"Sent to {self.target_channel.mention}.", color=discord.Color.green())
+        confirm_embed = discord.Embed(
+            description=f"✅ Sent to {self.target_channel.mention}.", color=discord.Color.green()
+        )
         await interaction.response.edit_message(embed=confirm_embed, view=None)
         if self.preview_message:
             await self.preview_message.edit(embed=confirm_embed, view=None)
 
-    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger, row=3)
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger, emoji="✖️", row=3)
     async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
         cancel_embed = discord.Embed(description="Cancelled.", color=discord.Color.light_grey())
         await interaction.response.edit_message(embed=cancel_embed, view=None)
