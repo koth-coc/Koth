@@ -41,13 +41,13 @@ class ParticipantsView(discord.ui.View):
         embed.set_footer(text=f"Page {self.page + 1} of {self.max_page + 1}")
         return embed
 
-    @discord.ui.button(label="<:Back:1524747897030180914>", style=discord.ButtonStyle.secondary)
+    @discord.ui.button(style=discord.ButtonStyle.secondary, emoji="<:Back:1524747897030180914>")
     async def previous_page(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.page -= 1
         self.update_buttons()
         await interaction.response.edit_message(embed=self.build_embed(), view=self)
 
-    @discord.ui.button(label="<:Next:1524747863521755326>", style=discord.ButtonStyle.secondary)
+    @discord.ui.button(style=discord.ButtonStyle.secondary, emoji="<:Next:1524747863521755326>")
     async def next_page(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.page += 1
         self.update_buttons()
