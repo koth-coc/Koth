@@ -299,15 +299,16 @@ class EmbedBuilderView(discord.ui.View):
         await interaction.response.send_modal(AddLinkButtonModal(self))
 
     @discord.ui.select(
-        cls=discord.ui.ChannelSelect,
-        channel_types=[discord.ChannelType.text],
-        placeholder="Channel",
-        row=2,
+    cls=discord.ui.ChannelSelect,
+    channel_types=[discord.ChannelType.text],
+    placeholder="Channel",
+    row=2,
     )
     async def select_channel(self, interaction: discord.Interaction, select: discord.ui.ChannelSelect):
-        self.target_channel = select.values[0]
-        await interaction.response.defer()
-        await self.update_preview()
+    self.target_channel = interaction.guild.get_channel(select.values[0].id)
+    await interaction.response.defer()
+    await self.update_preview()
+
 
     @discord.ui.button(label="Send", style=discord.ButtonStyle.success, row=3)
     async def send(self, interaction: discord.Interaction, button: discord.ui.Button):
