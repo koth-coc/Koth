@@ -170,27 +170,29 @@ class SetupView(discord.ui.View):
 # ---------------------------------------------------------------------------
 
 class TitleModal(discord.ui.Modal, title="Set Title"):
-    value = discord.ui.TextInput(label="Title", max_length=256)
+    value = discord.ui.TextInput(label="Title", max_length=256, required=False)
 
     def __init__(self, builder: "EmbedBuilderView"):
         super().__init__()
         self.builder = builder
 
     async def on_submit(self, interaction: discord.Interaction):
-        self.builder.embed.title = self.value.value
+        self.builder.embed.title = self.value.value or None
         await interaction.response.defer()
         await self.builder.update_preview()
 
 
 class DescriptionModal(discord.ui.Modal, title="Set Description"):
-    value = discord.ui.TextInput(label="Description", style=discord.TextStyle.paragraph, max_length=4000)
+    value = discord.ui.TextInput(
+        label="Description", style=discord.TextStyle.paragraph, max_length=4000, required=False
+    )
 
     def __init__(self, builder: "EmbedBuilderView"):
         super().__init__()
         self.builder = builder
 
     async def on_submit(self, interaction: discord.Interaction):
-        self.builder.embed.description = self.value.value
+        self.builder.embed.description = self.value.value or None
         await interaction.response.defer()
         await self.builder.update_preview()
 
@@ -312,26 +314,28 @@ class ButtonTypeView(discord.ui.View):
 # ---------------------------------------------------------------------------
 
 class SubTitleModal(discord.ui.Modal, title="Set Title"):
-    value = discord.ui.TextInput(label="Title", max_length=256)
+    value = discord.ui.TextInput(label="Title", max_length=256, required=False)
 
     def __init__(self, sub: "MessageButtonSubBuilder"):
         super().__init__()
         self.sub = sub
 
     async def on_submit(self, interaction: discord.Interaction):
-        self.sub.embed.title = self.value.value
+        self.sub.embed.title = self.value.value or None
         await self.sub.refresh(interaction)
 
 
 class SubDescriptionModal(discord.ui.Modal, title="Set Description"):
-    value = discord.ui.TextInput(label="Description", style=discord.TextStyle.paragraph, max_length=4000)
+    value = discord.ui.TextInput(
+        label="Description", style=discord.TextStyle.paragraph, max_length=4000, required=False
+    )
 
     def __init__(self, sub: "MessageButtonSubBuilder"):
         super().__init__()
         self.sub = sub
 
     async def on_submit(self, interaction: discord.Interaction):
-        self.sub.embed.description = self.value.value
+        self.sub.embed.description = self.value.value or None
         await self.sub.refresh(interaction)
 
 
