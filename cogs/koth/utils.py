@@ -269,10 +269,19 @@ class EmbedBuilderView(discord.ui.View):
     async def update_preview(self):
         if self.preview_message is None:
             return
+
         footer_note = f"Will send to: #{self.target_channel.name}" if self.target_channel else "No channel selected"
         preview = self.embed.copy()
-        preview.set_footer(text=footer_note if not preview.footer.text else f"{preview.footer.text}  •  {footer_note}")
-        await self.preview_message.edit(embed=preview)
+        base_footer = preview.footer.text
+        preview.set_footer(text=f"{base_footer}  •  {footer_note}" if base_footer else footer_note)
+
+        preview_buttons_view = None
+        if self.link_buttons:
+            preview_buttons_view = discord.ui.View()
+            for label, url in self.link_buttons:
+                preview_buttons_view.add_item(discord.ui.Button(label=label, url=url))
+
+        await self.preview_message.edit(embed=preview, view=preview_buttons_view)
 
     @discord.ui.button(label="Title", style=discord.ButtonStyle.primary, row=0)
     async def set_title(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -299,16 +308,15 @@ class EmbedBuilderView(discord.ui.View):
         await interaction.response.send_modal(AddLinkButtonModal(self))
 
     @discord.ui.select(
-    cls=discord.ui.ChannelSelect,
-    channel_types=[discord.ChannelType.text],
-    placeholder="Channel",
-    row=2,
+        cls=discord.ui.ChannelSelect,
+        channel_types=[discord.ChannelType.text],
+        placeholder="Channel",
+        row=2,
     )
     async def select_channel(self, interaction: discord.Interaction, select: discord.ui.ChannelSelect):
-    self.target_channel = interaction.guild.get_channel(select.values[0].id)
-    await interaction.response.defer()
-    await self.update_preview()
-
+        self.target_channel = interaction.guild.get_channel(select.values[0].id)
+        await interaction.response.defer()
+        await self.update_preview()
 
     @discord.ui.button(label="Send", style=discord.ButtonStyle.success, row=3)
     async def send(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -316,20 +324,22 @@ class EmbedBuilderView(discord.ui.View):
             await interaction.response.send_message("Please select a channel first.", ephemeral=True)
             return
 
-        final_view = discord.ui.View()
-        for label, url in self.link_buttons:
-            final_view.add_item(discord.ui.Button(label=label, url=url))
+        final_view = None
+        if self.link_buttons:
+            final_view = discord.ui.View()
+            for label, url in self.link_buttons:
+                final_view.add_item(discord.ui.Button(label=label, url=url))
 
-        await self.target_channel.send(embed=self.embed, view=final_view if self.link_buttons else None)
+        await self.target_channel.send(embed=self.embed, view=final_view)
 
         confirm_embed = discord.Embed(description=f"Sent to {self.target_channel.mention}.", color=discord.Color.green())
         await interaction.response.edit_message(embed=confirm_embed, view=None)
         if self.preview_message:
-            await self.preview_message.edit(embed=confirm_embed)
+            await self.preview_message.edit(embed=confirm_embed, view=None)
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger, row=3)
     async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
         cancel_embed = discord.Embed(description="Cancelled.", color=discord.Color.light_grey())
         await interaction.response.edit_message(embed=cancel_embed, view=None)
         if self.preview_message:
-            await self.preview_message.edit(embed=cancel_embed)
+            await self.preview_message.edit(embed=cancel_embed, view=None)
