@@ -514,7 +514,7 @@ class EmbedBuilderView(discord.ui.View):
         if self.link_buttons or self.message_buttons:
             final_view = discord.ui.View(timeout=None)
             for label, url in self.link_buttons:
-                final_view.add_item(discord.ui.Button(label=label, url=url)
+                final_view.add_item(discord.ui.Button(label=label, url=url))
             for cfg in self.message_buttons:
                 final_view.add_item(_build_message_button(cfg))
 
