@@ -10,7 +10,7 @@ def setup(group: app_commands.Group, bot):
         guide_embed = discord.Embed(
             title="📐 Embed Builder",
             description="Design a fully custom embed, then send it anywhere.",
-            color=discord.Color.from_rgb(88, 101, 242),
+            color=discord.Color.from_rgb(255, 255, 255),
         )
         guide_embed.add_field(name="📝 Title / Description", value="Set the main text content.", inline=True)
         guide_embed.add_field(name="🖼️ Banner", value="Add a large image at the bottom.", inline=True)
@@ -26,7 +26,7 @@ def setup(group: app_commands.Group, bot):
         preview_embed = discord.Embed(
             title="Preview",
             description="Your embed will appear here as you build it.",
-            color=discord.Color.from_rgb(47, 49, 54),
+            color=discord.Color.from_rgb(255, 255, 255),
         )
         preview_embed.set_footer(text="No channel selected")
         preview_msg = await interaction.followup.send(embed=preview_embed, ephemeral=True, wait=True)
