@@ -25,10 +25,6 @@ class KothBot(commands.Bot):
         self.tree.copy_global_to(guild=guild)
         await self.tree.sync(guild=guild)
 
-        # One-time: wipe old global commands (remove these 2 lines after next deploy confirms guild commands are correct)
-        self.tree.clear_commands(guild=None)
-        await self.tree.sync()
-
         self.koth_reminder = KothReminder(self)
         print("Slash commands synced.")
 
@@ -39,6 +35,8 @@ bot = KothBot()
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} ({bot.user.id})")
+    activity = discord.CustomActivity(name="🎉 TWO FOLD JULY FIESTA | Powered by GBS")
+    await bot.change_presence(activity=activity)
 
 
 if __name__ == "__main__":
