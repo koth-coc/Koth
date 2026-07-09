@@ -91,11 +91,11 @@ def setup(group: app_commands.Group, bot):
         if koth["log_channel_id"]:
             log_channel = interaction.guild.get_channel(koth["log_channel_id"])
             if log_channel:
-                log_embed = discord.Embed(title="Registration successful", color=discord.Color.from_rgb(255, 255, 255))
+                log_embed = discord.Embed(title="REGISTRATION SUCCESSFUL", color=discord.Color.from_rgb(255, 255, 255))
                 log_embed.add_field(name="Player name", value=player.name, inline=True)
                 log_embed.add_field(name="Player tag", value=tag, inline=True)
                 log_embed.add_field(name="Town Hall", value=str(player.town_hall), inline=True)
-                log_embed.add_field(name="Discord", value=interaction.user.mention, inline=True)
+                log_embed.add_field(name="Discord Id", value=interaction.user.mention, inline=True)
                 log_embed.add_field(name="Clan", value=clan_name, inline=True)
                 log_embed.add_field(name="Trophies", value=f"{trophies} 🏆", inline=True)
                 await log_channel.send(content=interaction.user.mention, embed=log_embed)
