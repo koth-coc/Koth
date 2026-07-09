@@ -411,7 +411,7 @@ class MessageButtonSubBuilder(discord.ui.View):
 
 def _build_message_button(cfg: dict) -> discord.ui.Button:
     """Creates a real, functional button that sends the configured message when clicked."""
-    btn = discord.ui.Button(label=cfg["label"], style=discord.ButtonStyle.secondary, emoji="💬")
+    btn = discord.ui.Button(label=cfg["label"], style=discord.ButtonStyle.secondary)
 
     async def callback(interaction: discord.Interaction, cfg=cfg):
         await interaction.response.send_message(embed=cfg["embed"], ephemeral=cfg["ephemeral"])
@@ -514,7 +514,7 @@ class EmbedBuilderView(discord.ui.View):
         if self.link_buttons or self.message_buttons:
             final_view = discord.ui.View(timeout=None)
             for label, url in self.link_buttons:
-                final_view.add_item(discord.ui.Button(label=label, url=url, emoji="🔗"))
+                final_view.add_item(discord.ui.Button(label=label, url=url)
             for cfg in self.message_buttons:
                 final_view.add_item(_build_message_button(cfg))
 
