@@ -175,6 +175,7 @@ class TitleModal(discord.ui.Modal, title="Set Title"):
     def __init__(self, builder: "EmbedBuilderView"):
         super().__init__()
         self.builder = builder
+        self.value.value = builder.embed.title
 
     async def on_submit(self, interaction: discord.Interaction):
         self.builder.embed.title = self.value.value or None
@@ -190,6 +191,7 @@ class DescriptionModal(discord.ui.Modal, title="Set Description"):
     def __init__(self, builder: "EmbedBuilderView"):
         super().__init__()
         self.builder = builder
+        self.value.value = builder.embed.description
 
     async def on_submit(self, interaction: discord.Interaction):
         self.builder.embed.description = self.value.value or None
@@ -203,6 +205,7 @@ class BannerModal(discord.ui.Modal, title="Set Banner Image"):
     def __init__(self, builder: "EmbedBuilderView"):
         super().__init__()
         self.builder = builder
+        self.value.value = builder.embed.image.url if builder.embed.image else None
 
     async def on_submit(self, interaction: discord.Interaction):
         self.builder.embed.set_image(url=self.value.value)
@@ -216,6 +219,7 @@ class FooterModal(discord.ui.Modal, title="Set Footer"):
     def __init__(self, builder: "EmbedBuilderView"):
         super().__init__()
         self.builder = builder
+        self.value.value = builder.embed.footer.text if builder.embed.footer else None
 
     async def on_submit(self, interaction: discord.Interaction):
         self.builder.embed.set_footer(text=self.value.value)
@@ -229,6 +233,7 @@ class ColorModal(discord.ui.Modal, title="Set Color"):
     def __init__(self, builder: "EmbedBuilderView"):
         super().__init__()
         self.builder = builder
+        self.value.value = f"#{builder.embed.color.value:06X}" if builder.embed.color else None
 
     async def on_submit(self, interaction: discord.Interaction):
         try:
@@ -319,6 +324,7 @@ class SubTitleModal(discord.ui.Modal, title="Set Title"):
     def __init__(self, sub: "MessageButtonSubBuilder"):
         super().__init__()
         self.sub = sub
+        self.value.value = sub.embed.title
 
     async def on_submit(self, interaction: discord.Interaction):
         self.sub.embed.title = self.value.value or None
@@ -333,6 +339,7 @@ class SubDescriptionModal(discord.ui.Modal, title="Set Description"):
     def __init__(self, sub: "MessageButtonSubBuilder"):
         super().__init__()
         self.sub = sub
+        self.value.value = sub.embed.description
 
     async def on_submit(self, interaction: discord.Interaction):
         self.sub.embed.description = self.value.value or None
@@ -345,6 +352,7 @@ class SubBannerModal(discord.ui.Modal, title="Set Banner Image"):
     def __init__(self, sub: "MessageButtonSubBuilder"):
         super().__init__()
         self.sub = sub
+        self.value.value = sub.embed.image.url if sub.embed.image else None
 
     async def on_submit(self, interaction: discord.Interaction):
         self.sub.embed.set_image(url=self.value.value)
