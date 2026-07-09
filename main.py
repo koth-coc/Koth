@@ -35,8 +35,12 @@ bot = KothBot()
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user} ({bot.user.id})")
-    activity = discord.CustomActivity(name="🎉 TWO FOLD JULY FIESTA | Powered by GBS")
+    activity = discord.Activity(
+        type=discord.ActivityType.watching,
+        name="TWO FOLD JULY FIESTA | Powered by GBS",
+    )
     await bot.change_presence(activity=activity)
+
 
 
 if __name__ == "__main__":
