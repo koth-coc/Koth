@@ -169,36 +169,75 @@ class SetupView(discord.ui.View):
 # /embed builder
 # ---------------------------------------------------------------------------
 
-class EmbedContentModal(discord.ui.Modal, title="Embed content"):
-    embed_title = discord.ui.TextInput(label="Title", required=False, max_length=256)
-    description = discord.ui.TextInput(
-        label="Description", style=discord.TextStyle.paragraph, required=False, max_length=4000
-    )
-    color = discord.ui.TextInput(label="Color hex (e.g. #5865F2)", required=False, max_length=7)
-    image_url = discord.ui.TextInput(label="Image URL", required=False)
-    footer = discord.ui.TextInput(label="Footer text", required=False, max_length=2048)
+class TitleModal(discord.ui.Modal, title="Set Title"):
+    value = discord.ui.TextInput(label="Title", max_length=256)
 
     def __init__(self, builder: "EmbedBuilderView"):
         super().__init__()
         self.builder = builder
 
     async def on_submit(self, interaction: discord.Interaction):
-        e = self.builder.embed
-        e.title = self.embed_title.value or None
-        e.description = self.description.value or None
-        if self.color.value:
-            try:
-                e.color = discord.Color(int(self.color.value.lstrip("#"), 16))
-            except ValueError:
-                pass
-        if self.image_url.value:
-            e.set_image(url=self.image_url.value)
-        if self.footer.value:
-            e.set_footer(text=self.footer.value)
-        await self.builder.refresh(interaction)
+        self.builder.embed.title = self.value.value
+        await interaction.response.defer()
+        await self.builder.update_preview()
 
 
-class AddButtonModal(discord.ui.Modal, title="Add a button"):
+class DescriptionModal(discord.ui.Modal, title="Set Description"):
+    value = discord.ui.TextInput(label="Description", style=discord.TextStyle.paragraph, max_length=4000)
+
+    def __init__(self, builder: "EmbedBuilderView"):
+        super().__init__()
+        self.builder = builder
+
+    async def on_submit(self, interaction: discord.Interaction):
+        self.builder.embed.description = self.value.value
+        await interaction.response.defer()
+        await self.builder.update_preview()
+
+
+class BannerModal(discord.ui.Modal, title="Set Banner Image"):
+    value = discord.ui.TextInput(label="Image URL", placeholder="https://...")
+
+    def __init__(self, builder: "EmbedBuilderView"):
+        super().__init__()
+        self.builder = builder
+
+    async def on_submit(self, interaction: discord.Interaction):
+        self.builder.embed.set_image(url=self.value.value)
+        await interaction.response.defer()
+        await self.builder.update_preview()
+
+
+class FooterModal(discord.ui.Modal, title="Set Footer"):
+    value = discord.ui.TextInput(label="Footer text", max_length=2048)
+
+    def __init__(self, builder: "EmbedBuilderView"):
+        super().__init__()
+        self.builder = builder
+
+    async def on_submit(self, interaction: discord.Interaction):
+        self.builder.embed.set_footer(text=self.value.value)
+        await interaction.response.defer()
+        await self.builder.update_preview()
+
+
+class ColorModal(discord.ui.Modal, title="Set Color"):
+    value = discord.ui.TextInput(label="Hex color (e.g. #5865F2)", max_length=7)
+
+    def __init__(self, builder: "EmbedBuilderView"):
+        super().__init__()
+        self.builder = builder
+
+    async def on_submit(self, interaction: discord.Interaction):
+        try:
+            self.builder.embed.color = discord.Color(int(self.value.value.lstrip("#"), 16))
+        except ValueError:
+            pass
+        await interaction.response.defer()
+        await self.builder.update_preview()
+
+
+class AddLinkButtonModal(discord.ui.Modal, title="Add a button"):
     label = discord.ui.TextInput(label="Button label", max_length=80)
     url = discord.ui.TextInput(label="Button URL", placeholder="https://...")
 
@@ -208,47 +247,88 @@ class AddButtonModal(discord.ui.Modal, title="Add a button"):
 
     async def on_submit(self, interaction: discord.Interaction):
         if len(self.builder.link_buttons) >= 5:
-            embed = discord.Embed(description="Max 5 buttons.", color=discord.Color.red())
-            await interaction.response.send_message(embed=embed)
+            await interaction.response.send_message("Max 5 buttons.", ephemeral=True)
             return
         self.builder.link_buttons.append((self.label.value, self.url.value))
-        await self.builder.refresh(interaction)
+        await interaction.response.defer()
+        await self.builder.update_preview()
 
 
 class EmbedBuilderView(discord.ui.View):
-    def __init__(self, author_id: int):
+    def __init__(self, author_id: int, default_channel: discord.TextChannel = None):
         super().__init__(timeout=600)
         self.author_id = author_id
-        self.embed = discord.Embed(description="Use *Edit content* to fill this embed in.")
+        self.embed = discord.Embed(description="This message will be updated as we use the builder")
         self.link_buttons: list[tuple[str, str]] = []
+        self.target_channel: discord.TextChannel = default_channel
+        self.preview_message: discord.WebhookMessage | None = None
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return interaction.user.id == self.author_id
 
-    async def refresh(self, interaction: discord.Interaction):
-        if interaction.response.is_done():
-            await interaction.edit_original_response(embed=self.embed, view=self)
-        else:
-            await interaction.response.edit_message(embed=self.embed, view=self)
+    async def update_preview(self):
+        if self.preview_message is None:
+            return
+        footer_note = f"Will send to: #{self.target_channel.name}" if self.target_channel else "No channel selected"
+        preview = self.embed.copy()
+        preview.set_footer(text=footer_note if not preview.footer.text else f"{preview.footer.text}  •  {footer_note}")
+        await self.preview_message.edit(embed=preview)
 
-    @discord.ui.button(label="Edit content", style=discord.ButtonStyle.primary, row=0)
-    async def edit_content(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_modal(EmbedContentModal(self))
+    @discord.ui.button(label="Title", style=discord.ButtonStyle.primary, row=0)
+    async def set_title(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(TitleModal(self))
 
-    @discord.ui.button(label="Add button", style=discord.ButtonStyle.secondary, row=0)
+    @discord.ui.button(label="Description", style=discord.ButtonStyle.primary, row=0)
+    async def set_description(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(DescriptionModal(self))
+
+    @discord.ui.button(label="Banner", style=discord.ButtonStyle.primary, row=0)
+    async def set_banner(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(BannerModal(self))
+
+    @discord.ui.button(label="Footer", style=discord.ButtonStyle.primary, row=0)
+    async def set_footer(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(FooterModal(self))
+
+    @discord.ui.button(label="Color", style=discord.ButtonStyle.secondary, row=1)
+    async def set_color(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(ColorModal(self))
+
+    @discord.ui.button(label="Add Button", style=discord.ButtonStyle.secondary, row=1)
     async def add_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_modal(AddButtonModal(self))
+        await interaction.response.send_modal(AddLinkButtonModal(self))
 
-    @discord.ui.button(label="Send", style=discord.ButtonStyle.success, row=1)
+    @discord.ui.select(
+        cls=discord.ui.ChannelSelect,
+        channel_types=[discord.ChannelType.text],
+        placeholder="Channel",
+        row=2,
+    )
+    async def select_channel(self, interaction: discord.Interaction, select: discord.ui.ChannelSelect):
+        self.target_channel = select.values[0]
+        await interaction.response.defer()
+        await self.update_preview()
+
+    @discord.ui.button(label="Send", style=discord.ButtonStyle.success, row=3)
     async def send(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if self.target_channel is None:
+            await interaction.response.send_message("Please select a channel first.", ephemeral=True)
+            return
+
         final_view = discord.ui.View()
         for label, url in self.link_buttons:
             final_view.add_item(discord.ui.Button(label=label, url=url))
-        await interaction.channel.send(embed=self.embed, view=final_view if self.link_buttons else None)
-        embed = discord.Embed(description="Sent.", color=discord.Color.green())
-        await interaction.response.edit_message(embed=embed, view=None)
 
-    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger, row=1)
+        await self.target_channel.send(embed=self.embed, view=final_view if self.link_buttons else None)
+
+        confirm_embed = discord.Embed(description=f"Sent to {self.target_channel.mention}.", color=discord.Color.green())
+        await interaction.response.edit_message(embed=confirm_embed, view=None)
+        if self.preview_message:
+            await self.preview_message.edit(embed=confirm_embed)
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.danger, row=3)
     async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
-        embed = discord.Embed(description="Cancelled.", color=discord.Color.light_grey())
-        await interaction.response.edit_message(embed=embed, view=None)
+        cancel_embed = discord.Embed(description="Cancelled.", color=discord.Color.light_grey())
+        await interaction.response.edit_message(embed=cancel_embed, view=None)
+        if self.preview_message:
+            await self.preview_message.edit(embed=cancel_embed)
