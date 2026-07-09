@@ -40,7 +40,7 @@ async def on_ready():
         name="TWO FOLD JULY FIESTA | Powered by GBS",
     )
     await bot.change_presence(activity=activity)
-
+    print("Presence updated.")
 
 
 if __name__ == "__main__":
