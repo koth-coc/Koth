@@ -450,11 +450,11 @@ class EmbedBuilderView(discord.ui.View):
         if self.link_buttons or self.message_buttons:
             preview_view = discord.ui.View()
             for label, url in self.link_buttons:
-                preview_view.add_item(discord.ui.Button(label=label, url=url, emoji="🔗"))
+                preview_view.add_item(discord.ui.Button(label=label, url=url))
             for cfg in self.message_buttons:
                 preview_view.add_item(
                     discord.ui.Button(
-                        label=cfg["label"], style=discord.ButtonStyle.secondary, emoji="💬", disabled=True
+                        label=cfg["label"], style=discord.ButtonStyle.secondary, disabled=True
                     )
                 )
 
