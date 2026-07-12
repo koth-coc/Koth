@@ -34,7 +34,7 @@ class ParticipantsView(discord.ui.View):
         ]
 
         embed = discord.Embed(
-            title=f" TH15 KOTH PARTICIPANTS ",
+            title=f" TH16 KOTH PARTICIPANTS ",
             description=f"**{len(self.registrations)}** player(s) registered\n\n" + "\n".join(lines),
             color=discord.Color.from_rgb(255, 255, 255),
         )
